@@ -123,25 +123,26 @@ function copy {
 
 }
 
-typeset DATADIR="$(mktemp -d || (t="/tmp/tmp.$PID$RANDOM"; mkdir "$t" && echo "$t") )"
-typeset INFODIR="$DATADIR/info"
+typeset TMPDIR="$(mktemp -d || (t="/tmp/tmp.$PID$RANDOM"; mkdir "$t" && echo "$t") )"
+typeset DSTDIR="$TMPDIR/$(uname -s)-$(uname -m)-$(uname -r)/$(date +%s)-$(getUuid)"
+typeset INFDIR="$DSTDIR/info"
 
-typeset dstpath="$DATADIR/$(uname -s)-$(uname -m)-$(uname -r)/$(date +%s)-$(getUuid)"
-mkdir -p "$dstpath" "$INFODIR"
+mkdir -p "$DSTDIR" "$INFDIR"
 
-echo "Storing data into '$DATADIR'"
+echo "Storing data into '$TMPDIR'"
 
 # Gather some details to fill info
 echo "Gathering OS info"
-uname -a > "$INFODIR/uname"
-dmidecode 2>/dev/null >"$INFODIR/dmidecode"
-cp /etc/*release "$INFODIR"
+uname -a > "$INFDIR/uname"
+dmidecode 2>/dev/null >"$INFDIR/dmidecode"
+cp /etc/*release "$INFDIR"
 
 # Copying the real interesting data
 echo "Copying /proc"
-copy "$dstpath" "/proc"
+copy "$DSTDIR" "/proc"
 echo "Copying /sys"
-copy "$dstpath" "/sys"
+copy "$DSTDIR" "/sys"
 
 
-echo "Data has been stored in '$DATADIR'"
+echo "Data has been stored in '$TMPDIR'"
+echo "Please send this content to repo https://github.com/Saruspete/procsysfs_db"
