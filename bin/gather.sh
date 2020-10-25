@@ -67,6 +67,8 @@ function binExists {
 function copy {
 	typeset dst="$1"; shift
 
+	# Other tools like rsync or tar works on the file-size,which is 0 in procfs or sysfs
+	# we need a dumb tool to just read & copy
 	if ! binExists "cp"; then
 		echo >&2 "No cp bin found. check \$PATH"
 		return 1
@@ -123,6 +125,11 @@ function copy {
 
 }
 
+
+typeset ASROOT=
+[[ "$(id -u)" != "0" ]] && binExists sudo && ASROOT="sudo -n "
+
+
 typeset TMPDIR="$(mktemp -d || (t="/tmp/tmp.$PID$RANDOM"; mkdir "$t" && echo "$t") )"
 typeset DSTDIR="$TMPDIR/$(uname -s)-$(uname -m)/$(uname -r)/$(date +%s)-$(getUuid)"
 typeset INFDIR="$DSTDIR/info"
@@ -134,8 +141,9 @@ echo "Storing data into '$TMPDIR'"
 # Gather some details to fill info
 echo "Gathering OS info"
 uname -a > "$INFDIR/uname"
-dmidecode 2>/dev/null >"$INFDIR/dmidecode"
+$ASROOT dmidecode 2>/dev/null >"$INFDIR/dmidecode"
 cp /etc/*release "$INFDIR"
+
 
 # Copying the real interesting data
 echo "Copying /proc"
@@ -143,6 +151,9 @@ copy "$DSTDIR" "/proc"
 echo "Copying /sys"
 copy "$DSTDIR" "/sys"
 
+
+# The copied files will seem huge: each file contains only a few bytes, but allocates a full page
+# so each file is at least 4k
 echo "Creating archive"
 typeset archive="$TMPDIR.tar.gz"
 tar -jc -C "$TMPDIR" -f "$archive" .
