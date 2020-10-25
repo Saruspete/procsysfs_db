@@ -143,6 +143,12 @@ copy "$DSTDIR" "/proc"
 echo "Copying /sys"
 copy "$DSTDIR" "/sys"
 
+echo "Creating archive"
+typeset archive="$TMPDIR.tar.gz"
+tar -jc -C "$TMPDIR" -f "$archive" .
 
 echo "Data has been stored in '$TMPDIR'"
-echo "Please send this content to repo https://github.com/Saruspete/procsysfs_db"
+echo "Archive created as '$archive'"
+echo "Please send this archive to repo https://github.com/Saruspete/procsysfs_db as a PR"
+echo "or send it to adrien.mahieux [at] gmail.com"
+echo "  Thanks"
