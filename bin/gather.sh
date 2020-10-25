@@ -124,7 +124,7 @@ function copy {
 }
 
 typeset TMPDIR="$(mktemp -d || (t="/tmp/tmp.$PID$RANDOM"; mkdir "$t" && echo "$t") )"
-typeset DSTDIR="$TMPDIR/$(uname -s)-$(uname -m)-$(uname -r)/$(date +%s)-$(getUuid)"
+typeset DSTDIR="$TMPDIR/$(uname -s)-$(uname -m)/$(uname -r)/$(date +%s)-$(getUuid)"
 typeset INFDIR="$DSTDIR/info"
 
 mkdir -p "$DSTDIR" "$INFDIR"
