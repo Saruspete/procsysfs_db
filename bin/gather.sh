@@ -171,8 +171,9 @@ echo "Copying /sys"
 copy "$DSTDIR" "/sys"
 
 
-# Do some anonymzation
-for f in "${ANONYMIZE[@]}"; do
+# Do some anonymzation (don't quote to allow glob)
+echo "Anonymzing some files"
+for f in ${ANONYMIZE[@]}; do
 	# Replace all letters and numbers by a single one
 	sed -i "$DSTDIR/$f" -E -e 's/[a-zA-Z]/X/g' -e 's/[0-9]/0/g'
 done
@@ -200,7 +201,8 @@ typeset archive="$TMPDIR.tar.gz"
 tar -jc -C "$TMPDIR" -f "$archive" .
 
 echo "Data has been stored in '$TMPDIR'"
-echo "Archive created as '$archive'"
-echo "Please send this archive to adrien.mahieux [at] gmail.com"
-echo "I'll do the extract & publishing in branch 'db' of https://github.com/Saruspete/procsysfs_db"
-echo "  Thanks"
+echo
+echo " ====> Archive created as '$archive'"
+echo "       Please send this archive to 'adrien.mahieux [at] gmail.com'"
+echo "       I'll do the extract & publishing in branch 'db' of https://github.com/Saruspete/procsysfs_db"
+echo "       Thanks"
