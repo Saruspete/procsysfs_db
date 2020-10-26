@@ -1,7 +1,0 @@
-/proc/kcore
-/proc/kmem
-/proc/mem
-/proc/self
-/proc/thread-self
-/proc/kallsyms
-/proc/[0-9]*

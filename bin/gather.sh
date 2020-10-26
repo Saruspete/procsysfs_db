@@ -11,8 +11,22 @@ export PATH="/bin:/sbin:/usr/bin:/usr/sbin:$PATH"
 export PS4=' (${BASH_SOURCE##*/}::${FUNCNAME[0]:-main}::$LINENO)  '
 
 # Exclude useless files
-typeset -a EXCLUDE= EXCLUDEDIR=
-mapfile EXCLUDE < "$MYPATH/gather.exclude"
+typeset -a EXCLUDE=(
+	"/proc/kcore"          # core too big and useless
+	"/proc/kmem"           # core
+	"/proc/mem"            # core
+	"/proc/self"           # Symlink to current pid
+	"/proc/thread-self"    # Symlink
+	"/proc/kallsyms"       # kallsyms is sensitive per node
+	"/proc/[0-9]*"         # Dont gather details about processes
+)
+
+# Files to be anonymzed
+typeset -a ANONYMIZE=(
+	"sys/class/net/*/address"
+	"proc/mounts"
+	"proc/key*"
+)
 
 
 function getUuid {
@@ -127,7 +141,9 @@ function copy {
 
 
 typeset ASROOT=
-[[ "$(id -u)" != "0" ]] && binExists sudo && ASROOT="sudo -n "
+if [[ "$(id -u)" != "0" ]] && binExists sudo; then
+	ASROOT="sudo -n "
+fi
 
 
 typeset TMPDIR="$(mktemp -d || (t="/tmp/tmp.$PID$RANDOM"; mkdir "$t" && echo "$t") )"
@@ -140,9 +156,13 @@ echo "Storing data into '$TMPDIR'"
 
 # Gather some details to fill info
 echo "Gathering OS info"
-uname -a > "$INFDIR/uname"
-$ASROOT dmidecode 2>/dev/null >"$INFDIR/dmidecode"
-cp /etc/*release "$INFDIR"
+(
+	uname -a > "$INFDIR/uname"
+	cpuid    > "$INFDIR/cpuid"
+	$ASROOT dmidecode > "$INFDIR/dmidecode"
+	$ASROOT 
+	cp /etc/*release "$INFDIR"
+) 2>/dev/null
 
 
 # Copying the real interesting data
@@ -152,14 +172,36 @@ echo "Copying /sys"
 copy "$DSTDIR" "/sys"
 
 
+# Do some anonymzation
+for f in "${ANONYMIZE[@]}"; do
+	# Replace all letters and numbers by a single one
+	sed -i "$DSTDIR/$f" -E -e 's/[a-zA-Z]/X/g' -e 's/[0-9]/0/g'
+done
+
+# Remove hostname
+typeset hname="$(uname -n)"
+for f in info/uname proc/sys/kernel/hostname proc/version; do
+	sed -i "$DSTDIR/$f" -E -e "s/$hname/MyHostName/g"
+done
+
+
+
 # The copied files will seem huge: each file contains only a few bytes, but allocates a full page
-# so each file is at least 4k
+# so each file is at least 4k. Use an index to send
+
+echo "Creating index"
+(
+	cd "$DSTDIR"
+	find > index
+)
+
+
 echo "Creating archive"
 typeset archive="$TMPDIR.tar.gz"
 tar -jc -C "$TMPDIR" -f "$archive" .
 
 echo "Data has been stored in '$TMPDIR'"
 echo "Archive created as '$archive'"
-echo "Please send this archive to repo https://github.com/Saruspete/procsysfs_db as a PR"
-echo "or send it to adrien.mahieux [at] gmail.com"
+echo "Please send this archive to adrien.mahieux [at] gmail.com"
+echo "I'll do the extract & publishing in branch 'db' of https://github.com/Saruspete/procsysfs_db"
 echo "  Thanks"
