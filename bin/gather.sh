@@ -160,7 +160,6 @@ echo "Gathering OS info"
 	uname -a > "$INFDIR/uname"
 	cpuid    > "$INFDIR/cpuid"
 	$ASROOT dmidecode > "$INFDIR/dmidecode"
-	$ASROOT 
 	cp /etc/*release "$INFDIR"
 ) 2>/dev/null
 
