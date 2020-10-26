@@ -15,10 +15,12 @@ typeset -a EXCLUDE=(
 	"/proc/kcore"          # core too big and useless
 	"/proc/kmem"           # core
 	"/proc/mem"            # core
+	"/proc/kmsg"           # Infinite wait
 	"/proc/self"           # Symlink to current pid
 	"/proc/thread-self"    # Symlink
 	"/proc/kallsyms"       # kallsyms is sensitive per node
 	"/proc/[0-9]*"         # Dont gather details about processes
+	"/sys/kernel/debug"    # Full of infinite files
 )
 
 # Files to be anonymzed
