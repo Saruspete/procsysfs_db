@@ -25,9 +25,9 @@ typeset -a EXCLUDE=(
 
 # Files to be anonymzed
 typeset -a ANONYMIZE=(
-	"sys/class/net/*/address"
-	"proc/mounts"
-	"proc/key*"
+	"/sys/class/net/*/address"
+	"/proc/mounts"
+	"/proc/key*"
 )
 
 
@@ -180,9 +180,15 @@ for f in ${ANONYMIZE[@]}; do
 	sed -i "$DSTDIR/$f" -E -e 's/[a-zA-Z]/X/g' -e 's/[0-9]/0/g'
 done
 
-# Remove hostname
+# Remove hostname from certain files
+# I'll keep info/ folder to be able to track the hostname and add new files
+# The info folder will not be published, only selected for interesting elements
 typeset hname="$(uname -n)"
-for f in info/uname proc/sys/kernel/hostname proc/version; do
+for f in \
+	proc/sys/kernel/hostname \
+	proc/version \
+	proc/spl/kstat/zfs/dbgmsg \
+	proc/asound/oss/sndstat; do
 	sed -i "$DSTDIR/$f" -E -e "s/$hname/MyHostName/g"
 done
 
