@@ -12,13 +12,10 @@ export PS4=' (${BASH_SOURCE##*/}::${FUNCNAME[0]:-main}::$LINENO)  '
 
 # Exclude useless files
 typeset -a EXCLUDE=(
-	"/proc/kcore"          # core too big and useless
-	"/proc/kmem"           # core
+	"/proc/k*"             # kallsyms kcore kmsg keys kpage... are too big and useless
 	"/proc/mem"            # core
-	"/proc/kmsg"           # Infinite wait
 	"/proc/self"           # Symlink to current pid
 	"/proc/thread-self"    # Symlink
-	"/proc/kallsyms"       # kallsyms is sensitive per node
 	"/proc/[0-9]*"         # Dont gather details about processes
 	"/sys/kernel/debug"    # Full of infinite files
 )
@@ -189,7 +186,8 @@ for f in \
 	proc/version \
 	proc/spl/kstat/zfs/dbgmsg \
 	proc/asound/oss/sndstat; do
-	sed -i "$DSTDIR/$f" -E -e "s/$hname/MyHostName/g"
+
+	sed -i "$DSTDIR/$f" -E -e "s/$hname/MyHostName/g" 2>/dev/null
 done
 
 
