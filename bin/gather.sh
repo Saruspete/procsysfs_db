@@ -203,7 +203,7 @@ echo "Creating index"
 
 
 echo "Creating archive"
-typeset archive="$TMPDIR.tar.gz"
+typeset archive="$TMPDIR.tar.bz2"
 tar -jc -C "$TMPDIR" -f "$archive" .
 
 echo "Data has been stored in '$TMPDIR'"
